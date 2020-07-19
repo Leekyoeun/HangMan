@@ -18,8 +18,8 @@ void gotoxy(int x, int y) {
 
 //keyboard 입력
 int GetKeyDown() {
-	if (_kbnhit() != 0) { //입력이 들어오면
-		return -getch(); //입력된 값 반환
+	if (_kbhit() != 0) { //입력이 들어오면
+		return _getch(); //입력된 값 반환
 	}
 	return 0;
 }
@@ -94,7 +94,7 @@ void SetDictionary(vector < string>& strArr) {
 }
 
 //시작화면 기능
-bool ReadGame() {
+bool ReayGame() {
 	DrawReadyGame(); //시작화면 그리기
 	while (true) {
 		int key = GetKeyDown();//키가 들어오면
@@ -109,7 +109,7 @@ bool ReadGame() {
 }
 
 //게임 시작 함수
-void STartGame() {
+void StartGame() {
 	int score = 0;
 	vector<string>pastWord; //입력한 영단어 저장
 	vector<string> strArr; //맞출 단어장
@@ -134,8 +134,69 @@ void STartGame() {
 
 		//1 question
 		while (true) { //하나의 단어를 맞추는 루프
-			DrawStartGame(life, score, pastWord); 
+			DrawStartGame(life, score, pastWord);  //사용단어, 생명력, 점수표기
 
+			//draw question
+			gotoxy(5, 5);
+			for (int i = 0; i < originLen; ++i) {
+				cout << strQuestion[i] << " ";
+			}
+			cout << endl;
+
+			//input
+			gotoxy(9, 12);
+			string strInput;
+			cin >> strInput;
+			if (strInput == "qq") {
+				return;
+			}
+			pastWord.push_back(strInput); //한번 입력한 단어는 pastWord에서 표기
+
+			if (strInput.length() == 1){ //입력받은 스트림의 길이가 1인갱우
+				//alphabet
+				for (int i = 0; i < originLen; ++i) {
+					if (strOriginal[i] == strInput[0]) { //오리지널 단어에 입력한 알파벳이 있는 경우
+						strQuestion[i] = strInput[0]; //해당 위치의 "_"를 알파벳이 있는 경우
+
+					}
+				}
+			}
+			else if (strInput.length() > 1) { //입력받은 스트림의 길이가 1보다 큰 경우
+
+				//word
+				if (strOriginal == strInput) {
+					//score up
+					score += 5;
+					pastWord.clear();
+					break; //하나의 단어를 맞추는 루프를 나가게 되고 다음 턴으로 넘어가게 된다
+				}
+			}
+			//틀리거나, 맞거나 어쨌든 입력이 되면 라이프가 무조건 1개씩 깎입니다.
+			life -= 1;
+			if (life < 0) {
+				score -= 5;
+				if (score < 0) {
+					score = 0;
+				}
+				pastWord.clear();
+				break;
+			}
 		}
 	}
+}
+
+//main 함수
+int main(void) {
+	SetConsoleView();
+	bool isStart = false;
+	while (true) {
+		isStart = ReayGame();
+		if (isStart) {
+			StartGame();
+		}
+		else {
+			break;
+		}
+	}
+	return 0;
 }
